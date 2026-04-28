@@ -6,7 +6,7 @@ import type { FeaturedPaper } from "@/types";
 export const revalidate = 3600;
 
 async function getFeatured(): Promise<FeaturedPaper[]> {
-  return sql`
+  const rows = await sql`
     SELECT p.pmid, p.title, p.journal, p.pub_date,
            pi.did, pi.found, pi.matters
     FROM paper_insights pi
@@ -14,7 +14,8 @@ async function getFeatured(): Promise<FeaturedPaper[]> {
     WHERE pi.feed_date = CURRENT_DATE
     ORDER BY pi.score DESC
     LIMIT 10
-  ` as Promise<FeaturedPaper[]>;
+  `;
+  return rows as FeaturedPaper[];
 }
 
 export default async function Home() {
