@@ -64,31 +64,58 @@ export default function Feed() {
     <div>
       <FilterBar filters={filters} onChange={setFilters} />
 
-      {visibleFeatured.length > 0 && (
-        <>
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Today's Picks</p>
-          <div className="space-y-4 mb-12">
-            {visibleFeatured.map((p) => (
-              <div key={p.pmid} onClick={() => markRead(p.pmid)}>
-                <FeaturedCard paper={p} read={read.has(p.pmid)} />
+      {/* mobile: single column, desktop: two columns */}
+      <div className="md:grid md:grid-cols-[1fr_360px] md:gap-10 md:items-start">
+
+        {/* left: featured */}
+        <div className="md:sticky md:top-10 md:max-h-[calc(100vh-13rem)] md:overflow-y-auto md:pr-1">
+          {visibleFeatured.length > 0 && (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Today's Picks</p>
+              <div className="space-y-4">
+                {visibleFeatured.map((p) => (
+                  <div key={p.pmid} onClick={() => markRead(p.pmid)}>
+                    <FeaturedCard paper={p} read={read.has(p.pmid)} />
+                  </div>
+                ))}
               </div>
-            ))}
+            </>
+          )}
+
+          {/* mobile filler (shown below featured on small screens) */}
+          <div className="md:hidden mt-10">
+            {visibleFiller.length > 0 && (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-2">More Papers</p>
+                {visibleFiller.map((p) => (
+                  <div key={p.pmid} onClick={() => markRead(p.pmid)}>
+                    <FillerCard paper={p} read={read.has(p.pmid)} />
+                  </div>
+                ))}
+              </>
+            )}
+            {!done && <div ref={loaderRef} className="h-10" />}
           </div>
-        </>
-      )}
+        </div>
 
-      {visibleFiller.length > 0 && (
-        <>
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-2">More Papers</p>
-          {visibleFiller.map((p) => (
-            <div key={p.pmid} onClick={() => markRead(p.pmid)}>
-              <FillerCard paper={p} read={read.has(p.pmid)} />
-            </div>
-          ))}
-        </>
-      )}
+        {/* right: filler (desktop only, sticky scroll) */}
+        <div className="hidden md:block">
+          <div className="sticky top-10 max-h-[calc(100vh-13rem)] overflow-y-auto pr-1">
+            {visibleFiller.length > 0 && (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-2">More Papers</p>
+                {visibleFiller.map((p) => (
+                  <div key={p.pmid} onClick={() => markRead(p.pmid)}>
+                    <FillerCard paper={p} read={read.has(p.pmid)} />
+                  </div>
+                ))}
+              </>
+            )}
+            {!done && <div ref={loaderRef} className="h-10" />}
+          </div>
+        </div>
 
-      {!done && <div ref={loaderRef} className="h-10" />}
+      </div>
     </div>
   );
 }
