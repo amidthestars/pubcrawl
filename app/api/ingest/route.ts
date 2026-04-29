@@ -4,7 +4,7 @@ import { rankPapers } from "@/lib/rank";
 import { interpretPaper } from "@/lib/interpret";
 import { sql } from "@/lib/db";
 
-const QUERY = "(clinical trial[pt] OR systematic review[pt] OR case reports[pt]) AND humans[mh] AND english[la]";
+const QUERY = "(clinical trial[pt] OR case reports[pt]) AND humans[mh] AND english[la] AND free full text[filter]";
 const FETCH_COUNT = 200;
 const KEEP_COUNT = 80;
 const ENRICH_COUNT = 50;
@@ -33,17 +33,23 @@ export async function POST(req: Request) {
     .slice(0, KEEP_COUNT);
   console.log("Papers after ranking/filter:", ranked.length);
 
-  // 3. store papers
+  // 3. store papers, track which ones succeeded
+  const inserted = new Set<string>();
   for (const p of ranked) {
-    await sql`
-      INSERT INTO papers (pmid, title, abstract, authors, journal, pub_date)
-      VALUES (${p.pmid}, ${p.title}, ${p.abstract}, ${p.authors}, ${p.journal}, ${p.pubDate})
-      ON CONFLICT (pmid) DO NOTHING
-    `;
+    try {
+      await sql`
+        INSERT INTO papers (pmid, title, abstract, authors, journal, pub_date, source, pmc_id, keywords, pub_types)
+        VALUES (${p.pmid}, ${p.title}, ${p.abstract}, ${p.authors}, ${p.journal}, ${p.pubDate}, ${p.source}, ${p.pmcId}, ${p.keywords}, ${p.pubTypes})
+        ON CONFLICT (pmid) DO NOTHING
+      `;
+      inserted.add(p.pmid);
+    } catch (e) {
+      console.error(`Failed to insert paper ${p.pmid}:`, e);
+    }
   }
 
-  // 4. enrich top N with LLM
-  const toEnrich = ranked.slice(0, ENRICH_COUNT);
+  // 4. enrich top N with LLM, only if paper was inserted
+  const toEnrich = ranked.filter((p) => inserted.has(p.pmid)).slice(0, ENRICH_COUNT);
   for (const p of toEnrich) {
     const insight = await interpretPaper(p);
     if (!insight) continue;

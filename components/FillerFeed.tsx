@@ -24,7 +24,10 @@ export default function FillerFeed() {
       .then((r) => r.json())
       .then((rows: FillerPaper[]) => {
         if (rows.length === 0) setDone(true);
-        else setPapers((prev) => [...prev, ...rows]);
+        else setPapers((prev) => {
+          const seen = new Set(prev.map((p) => p.pmid));
+          return [...prev, ...rows.filter((r) => !seen.has(r.pmid))];
+        });
       });
   }, [page]);
 

@@ -1,15 +1,16 @@
+import Link from "next/link";
 import type { FillerPaper } from "@/types";
+import TagList from "./TagList";
 
-export default function FillerCard({ paper }: { paper: FillerPaper }) {
+export default function FillerCard({ paper, read }: { paper: FillerPaper; read?: boolean }) {
   return (
-    <a
-      href={`https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block py-3 border-b border-neutral-800 hover:text-white transition-colors"
+    <Link
+      href={`/paper/${paper.pmid}`}
+      className={`block py-3 border-b border-neutral-800 hover:text-white transition-colors ${read ? "opacity-50" : ""}`}
     >
-      <p className="text-sm text-neutral-200 leading-snug">{paper.title}</p>
-      <p className="text-xs text-neutral-500 mt-1">{paper.journal} · {paper.pub_date}</p>
-    </a>
+      <p className="text-sm text-neutral-200 leading-snug mb-1">{paper.title}</p>
+      <p className="text-xs text-neutral-500">{paper.journal} · {paper.pub_date}</p>
+      <TagList keywords={paper.keywords} pubTypes={paper.pub_types} source={paper.source} />
+    </Link>
   );
 }
