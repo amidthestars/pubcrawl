@@ -7,7 +7,7 @@ import { sql } from "@/lib/db";
 const QUERY = "(clinical trial[pt] OR case reports[pt]) AND humans[mh] AND english[la] AND free full text[filter]";
 const FETCH_COUNT = 200;
 const KEEP_COUNT = 80;
-const ENRICH_COUNT = 50;
+const ENRICH_COUNT = 15;
 const SCORE_THRESHOLD = 0.3;
 
 export async function POST(req: Request) {
