@@ -68,3 +68,5 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ kept: ranked.length, enriched: toEnrich.length });
 }
+
+export async function GET(req: Request) { return POST(req); }
